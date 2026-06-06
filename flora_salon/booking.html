@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Онлайн запись - Флора</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div class="logo">Флора</div>
+
+    <nav class="nav">
+        <a href="index.html">Главная</a>
+        <a href="about.html">О нас</a>
+        <a href="services.html">Услуги</a>
+        <a href="team.html">Команда</a>
+        <a href="profile.html">Профиль</a>
+    </nav>
+</header>
+
+<section class="booking">
+    <h2>Онлайн запись</h2>
+
+    <form class="booking-form" action="save.php" method="POST">
+
+    <input type="text" name="name" placeholder="Ваше имя" required>
+
+    <input type="tel" name="phone" placeholder="Телефон" required>
+
+    <select name="service" required>
+        <option disabled selected>Выберите услугу</option>
+        <option>Маникюр</option>
+        <option>Женская стрижка</option>
+        <option>Мужская стрижка</option>
+        <option>Окрашивание</option>
+        <option>Брови</option>
+        <option>Пирсинг</option>
+    </select>
+
+    <input type="date" name="date" required>
+
+    <input type="time" name="time" required>
+
+    <button type="submit" class="btn-book">Записаться</button>
+
+</form>
+</section>
+
+<script src="script.js"></script>
+<p id="success-message"></p>
+</body>
+</html>

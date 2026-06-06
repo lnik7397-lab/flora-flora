@@ -1,0 +1,161 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,0.35),
+        rgba(0,0,0,0.35)
+    ),
+    url("images/главная.jpg");
+
+    background-size:cover;
+    background-position:center;
+}
+
+.overlay{
+    width:100%;
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:30px;
+}
+
+.register-card{
+
+    width:480px;
+
+    background:rgba(255,255,255,0.95);
+
+    backdrop-filter:blur(10px);
+
+    padding:45px;
+
+    border-radius:25px;
+
+    box-shadow:
+    0 20px 50px rgba(0,0,0,0.15);
+}
+
+.register-card h1{
+
+    text-align:center;
+
+    color:#7b203a;
+
+    font-size:42px;
+
+    margin-bottom:10px;
+
+    letter-spacing:2px;
+}
+
+.subtitle{
+
+    text-align:center;
+
+    color:#666;
+
+    margin-bottom:30px;
+}
+
+.register-card input{
+
+    width:100%;
+
+    padding:15px;
+
+    margin-bottom:15px;
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+    transition:.3s;
+}
+
+.register-card input:focus{
+
+    outline:none;
+
+    border-color:#7b203a;
+
+    box-shadow:
+    0 0 10px rgba(123,32,58,0.15);
+}
+
+.register-card button{
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#7b203a;
+
+    color:white;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.register-card button:hover{
+
+    background:#5f1830;
+
+    transform:translateY(-2px);
+}
+
+.login-link{
+
+    text-align:center;
+
+    margin-top:20px;
+
+    color:#555;
+}
+
+.login-link a{
+
+    text-decoration:none;
+
+    color:#7b203a;
+
+    font-weight:600;
+}
+
+.login-link a:hover{
+
+    text-decoration:underline;
+}
+
+@media(max-width:550px){
+
+.register-card{
+    width:100%;
+    padding:30px;
+}
+
+.register-card h1{
+    font-size:34px;
+}
+
+}
