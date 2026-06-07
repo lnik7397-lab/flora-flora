@@ -4,50 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход | Флора</title>
-
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
-
 <div class="overlay">
-
     <div class="login-card">
-
         <h1>Флора</h1>
-        <p class="subtitle">
-            Вход в личный кабинет
-        </p>
+        <p class="subtitle">Вход в личный кабинет</p>
 
         <form id="loginForm">
-
-            <input
-                type="email"
-                placeholder="Введите e-mail"
-                required
-            >
-
-            <input
-                type="password"
-                placeholder="Введите пароль"
-                required
-            >
-
-            <button type="submit">
-                Войти
-            </button>
-
+            <input type="email" id="email" placeholder="Введите e-mail" required>
+            <input type="password" id="password" placeholder="Введите пароль" required>
+            <button type="submit">Войти</button>
         </form>
 
         <p class="register-link">
             Нет аккаунта?
-            <a href="register.html">
-                Зарегистрироваться
-            </a>
+            <a href="register.html">Зарегистрироваться</a>
         </p>
-
     </div>
-
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="login.js"></script>
 </body>
 </html>
