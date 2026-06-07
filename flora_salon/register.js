@@ -7,7 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    const form = document.getElementById("registerForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const email = document.getElementById("email").value;
@@ -15,6 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const password2 = document.getElementById("password2").value;
         const name = document.getElementById("name").value;
         const phone = document.getElementById("phone").value;
+
+        // Валидация
+        if (!email || !password1 || !name) {
+            alert("Заполните все обязательные поля!");
+            return;
+        }
 
         if (password1 !== password2) {
             alert("Пароли не совпадают!");
@@ -26,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        console.log('Регистрация пользователя:', email);
+
+        // Регистрация (профиль создастся АВТОМАТИЧЕСКИ через триггер)
         const { data, error } = await window.supabase.auth.signUp({
             email: email,
             password: password1,
@@ -38,10 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (error) {
-            alert("Ошибка: " + error.message);
+            console.error('Ошибка регистрации:', error);
+            if (error.message === "User already registered") {
+                alert("Пользователь с таким email уже существует. Попробуйте войти.");
+                window.location.href = "login.html";
+            } else {
+                alert("Ошибка: " + error.message);
+            }
             return;
         }
 
+        console.log('Регистрация успешна! Пользователь ID:', data.user?.id);
         alert("Регистрация успешна! Теперь войдите.");
         window.location.href = "login.html";
     });
