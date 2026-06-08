@@ -1,4 +1,4 @@
-// profile.js
+
 document.addEventListener('DOMContentLoaded', async () => {
     
     if (!window.supabase) {
@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Получаем текущего пользователя
+    
     const { data: { user }, error } = await window.supabase.auth.getUser();
     
     if (error || !user) {
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log('Загружаем профиль для:', user.email);
 
-    // Загружаем профиль из таблицы profiles
+    
     const { data: profile, error: profileError } = await window.supabase
         .from("profiles")
         .select("*")
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Ошибка загрузки профиля:', profileError);
     }
 
-    // Заполняем данные на странице
+    
     if (document.getElementById("userName")) {
         document.getElementById("userName").textContent = profile?.name || user.user_metadata?.name || "—";
     }
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById("userPhone").textContent = profile?.phone || user.user_metadata?.phone || "—";
     }
 
-    // Загружаем последнюю запись
+    
     const { data: appointment } = await window.supabase
         .from("appointments")
         .select("*")
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById("time").textContent = "—";
     }
 
-    // Кнопка выхода
+    
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
@@ -75,4 +75,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = "login.html";
         });
     }
+});
+
+
+// фикс кнопки????
+document
+.getElementById("bookingAgainBtn")
+.addEventListener("click", () => {
+
+    window.location.href = "booking.html";
+
 });

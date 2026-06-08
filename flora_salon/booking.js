@@ -1,4 +1,4 @@
-// booking.js
+
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log('Supabase готов');
 
-    // Проверка авторизации и загрузка данных пользователя
+   
     async function checkAuthAndLoadUser() {
         try {
             const { data: { user }, error } = await window.supabase.auth.getUser();
@@ -24,19 +24,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentUser = user;
             console.log('Пользователь авторизован:', user.email);
             
-            // Загружаем профиль пользователя - ИСПРАВЛЕНО
+           
             try {
                 const { data: profile, error: profileError } = await window.supabase
                     .from("profiles")
                     .select("name, phone")
                     .eq("id", user.id)
-                    .maybeSingle();  // вместо .single()
+                    .maybeSingle();  
                 
                 if (profileError) {
                     console.error('Ошибка загрузки профиля:', profileError);
                 }
                 
-                // Автоматически заполняем поля имя и телефон
+                
                 if (document.getElementById("name")) {
                     const userName = profile?.name || user.user_metadata?.name || "";
                     document.getElementById("name").value = userName;
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } catch (err) {
                 console.error('Ошибка загрузки профиля:', err);
-                // Всё равно продолжаем, даже если профиль не загрузился
+                
                 if (document.getElementById("name")) {
                     document.getElementById("name").value = user.user_metadata?.name || "";
                 }
@@ -67,7 +67,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Загрузка доступных слотов
     async function loadAvailableSlots() {
         const date = document.getElementById("date").value;
         if (!date) return;
@@ -118,7 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Отправка записи
+   
     const bookingForm = document.getElementById("bookingForm");
     if (bookingForm) {
         bookingForm.addEventListener("submit", async (e) => {
@@ -162,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         time: time,
                         status: "Активна"
                     })
-                    .select();  // добавлено .select() для получения ответа
+                    .select();  
                 
                 if (error) {
                     console.error('Ошибка Supabase:', error);
@@ -173,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     bookingForm.reset();
                     document.getElementById("selectedTime").value = "";
                     
-                    // Снова заполняем имя и телефон
+                    
                     if (currentUser) {
                         try {
                             const { data: profile } = await window.supabase
@@ -200,7 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Назначение обработчиков
+    
     const dateInput = document.getElementById("date");
     if (dateInput) {
         dateInput.addEventListener("change", loadAvailableSlots);
@@ -211,6 +210,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         dateInput.min = today;
     }
 
-    // Загружаем пользователя и заполняем поля
+   
     await checkAuthAndLoadUser();
 });
+
+const timeSlotsContainer =
+document.getElementById("timeSlots");
+
+const times = [
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00"
+];
+
+function loadTimeSlots() {
+
+    timeSlotsContainer.innerHTML = "";
+
+    times.forEach(time => {
+
+        const slot =
+        document.createElement("div");
+
+        slot.classList.add("time-slot");
+
+        slot.textContent = time;
+
+        slot.addEventListener("click", () => {
+
+            document
+            .querySelectorAll(".time-slot")
+            .forEach(item => {
+                item.classList.remove("selected");
+            });
+
+            slot.classList.add("selected");
+
+            document
+            .getElementById("selectedTime")
+            .value = time;
+
+        });
+
+        timeSlotsContainer.appendChild(slot);
+
+    });
+
+}
+
+loadTimeSlots();
