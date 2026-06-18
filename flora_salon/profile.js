@@ -1,5 +1,5 @@
-
 document.addEventListener('DOMContentLoaded', async () => {
+    
     
     if (!window.supabase) {
         console.error('Supabase не загружен!');
@@ -8,15 +8,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     
-    const { data: { user }, error } = await window.supabase.auth.getUser();
+    const { data: { session }, error: sessionError } = await window.supabase.auth.getSession();
     
-    if (error || !user) {
-        console.error('Пользователь не авторизован');
+    if (sessionError || !session) {
+        console.error('Нет сессии');
         window.location.href = "login.html";
         return;
     }
 
-    console.log('Загружаем профиль для:', user.email);
+    const user = session.user; 
+    console.log('✅ Загружаем профиль для:', user.email);
 
     
     const { data: profile, error: profileError } = await window.supabase
@@ -42,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById("userPhone").textContent = profile?.phone || user.user_metadata?.phone || "—";
     }
 
-    
+   
     const { data: appointment } = await window.supabase
         .from("appointments")
         .select("*")
@@ -75,14 +76,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = "login.html";
         });
     }
-});
 
-
-// фикс кнопки????
-document
-.getElementById("bookingAgainBtn")
-.addEventListener("click", () => {
-
-    window.location.href = "booking.html";
-
+    
+    const bookingAgainBtn = document.getElementById("bookingAgainBtn");
+    if (bookingAgainBtn) {
+        bookingAgainBtn.addEventListener("click", () => {
+           
+            window.supabase.auth.getSession().then(({ data: { session } }) => {
+                if (session) {
+                    
+                    console.log('✅ Переход на запись с сессией');
+                    window.location.href = "booking.html";
+                } else {
+                   
+                    console.log('❌ Нет сессии, идем на логин');
+                    window.location.href = "login.html";
+                }
+            }).catch(() => {
+                window.location.href = "login.html";
+            });
+        });
+    }
 });
