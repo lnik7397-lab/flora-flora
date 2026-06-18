@@ -34,16 +34,8 @@
             gap: 10px;
             margin: 20px 0;
         }
-        
         body {
             display: none;
-        }
-        .user-info {
-            background: #e8f5e9;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
         }
     </style>
 </head>
@@ -88,73 +80,71 @@
     </form>
 </section>
 
+<!-- ========================================== -->
+<!-- ПОДКЛЮЧАЕМ СКРИПТЫ (ОДИНАКОВО НА ВСЕХ СТРАНИЦАХ) -->
+<!-- ========================================== -->
 
-
-
+<!-- 1. БИБЛИОТЕКА -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- 2. НАСТРОЙКИ (ОДИН РАЗ НА ВСЕХ СТРАНИЦАХ) -->
+<script src="supabase.js"></script>
 
+<!-- 3. ПРОВЕРКА СЕССИИ И ПОКАЗ СТРАНИЦЫ -->
 <script>
-    console.log('🚀 Загрузка страницы...');
+    console.log('🚀 === СТРАНИЦА ЗАПИСИ ===');
     
-   
-    const supabaseUrl = 'https://mkmpljmpdizbhokjmkow.supabase.co/rest/v1/';  
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rbXBsam1wZGl6Ymhva2pta293Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NTQ5NDgsImV4cCI6MjA5NjMzMDk0OH0.TrMmfS9DzXAO9IPYzLpMIR_LCEHFCn6PpUcCCEURyTY';              // ← ЗАМЕНИТЕ!
-    
-    
-  
-    if (supabaseUrl === 'https://ваш_проект.supabase.co' || supabaseKey === 'ваш_публичный_ключ') {
-        console.error('❌ ОШИБКА: Вставьте реальные данные Supabase!');
-        document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50px;">❌ Ошибка: настройте Supabase в booking.html</h1>';
-        throw new Error('Нет данных Supabase');
-    }
-    
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    console.log('✅ Supabase инициализирован');
-    
-    
-    async function checkAuth() {
-        try {
-            console.log('🔍 Проверяем сессию...');
-            const { data: { session }, error } = await supabase.auth.getSession();
-            
-            if (error) {
-                console.error('❌ Ошибка получения сессии:', error);
+    // Проверяем, что supabase инициализирован
+    if (!window.supabase) {
+        console.error('❌ Supabase не инициализирован!');
+        document.body.innerHTML = '<h1 style="color:red;">Ошибка: Supabase не загружен</h1>';
+    } else {
+        console.log('✅ Supabase доступен');
+        
+        // Проверяем сессию
+        window.supabase.auth.getSession()
+            .then(({ data: { session }, error }) => {
+                if (error) {
+                    console.error('❌ Ошибка получения сессии:', error);
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                console.log('📡 Сессия:', session ? 'ЕСТЬ ✅' : 'НЕТ ❌');
+                
+                if (!session) {
+                    console.log('❌ Нет сессии - редирект на login.html');
+                    window.location.href = 'login.html';
+                } else {
+                    console.log('✅ Пользователь:', session.user.email);
+                    console.log('🆔 ID:', session.user.id);
+                    
+                    // ПОКАЗЫВАЕМ СТРАНИЦУ
+                    document.body.style.display = 'block';
+                    
+                    // Подставляем имя и телефон из профиля
+                    window.supabase
+                        .from('profiles')
+                        .select('name, phone')
+                        .eq('id', session.user.id)
+                        .maybeSingle()
+                        .then(({ data: profile }) => {
+                            if (profile) {
+                                if (profile.name) document.getElementById('name').value = profile.name;
+                                if (profile.phone) document.getElementById('phone').value = profile.phone;
+                                console.log('✅ Данные профиля загружены');
+                            }
+                        });
+                }
+            })
+            .catch(err => {
+                console.error('❌ Критическая ошибка:', err);
                 window.location.href = 'login.html';
-                return;
-            }
-            
-            if (!session) {
-                console.log('⛔ Нет сессии, редирект на вход');
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            console.log('✅ Сессия есть! Пользователь:', session.user.email);
-            document.body.style.display = 'block';
-            window.currentUserId = session.user.id;
-            
-        } catch (err) {
-            console.error('❌ Критическая ошибка:', err);
-            window.location.href = 'login.html';
-        }
+            });
     }
-    
-    
-    checkAuth();
-    
-    
-    supabase.auth.onAuthStateChange((event, session) => {
-        console.log('🔄 Статус авторизации:', event);
-        if (event === 'SIGNED_OUT' || !session) {
-            window.location.href = 'login.html';
-        }
-    });
-    
-    console.log('✅ Скрипт загружен');
 </script>
 
-
+<!-- 4. ЛОГИКА РАБОТЫ СО СЛОТАМИ ВРЕМЕНИ И ФОРМОЙ -->
 <script src="booking.js"></script>
 
 </body>
