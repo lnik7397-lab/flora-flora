@@ -5,125 +5,41 @@
     <title>Онлайн запись - Флора</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            display: none;
-            font-family: Arial, sans-serif;
-            background: #f9f6f3;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .header {
-            background: #800020;
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo { font-size: 28px; font-weight: bold; }
-        .nav a { color: white; text-decoration: none; margin: 0 15px; }
-        .btn-hero { background: white; color: #800020; padding: 10px 25px; border-radius: 25px; text-decoration: none; font-weight: bold; }
-        
-        .booking {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        
-        .booking h2 {
-            text-align: center;
-            color: #800020;
-            margin-bottom: 30px;
-        }
-        
-        .booking-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .booking-form input,
-        .booking-form select {
-            padding: 14px;
+        .time-slot {
+            padding: 12px;
+            margin: 5px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
-        }
-        
-        
-        #timeSlots {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-            padding: 10px;
-            background: #f8f5f2;
-            border-radius: 12px;
-            min-height: 60px;
-        }
-        
-        .time-slot {
-            padding: 14px 10px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
             cursor: pointer;
             background: white;
-            text-align: center;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            user-select: none;
+            transition: 0.3s;
         }
-        
         .time-slot:hover:not(.booked) {
             background: #800020;
             color: white;
-            border-color: #800020;
         }
-        
-        .time-slot.selected {
-            background: #800020 !important;
-            color: white !important;
-            border-color: #800020 !important;
-        }
-        
         .time-slot.booked {
             background: #f0f0f0;
             color: #999;
             cursor: not-allowed;
             text-decoration: line-through;
         }
-        
-        .time-hint {
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin: 5px 0 15px 0;
-        }
-        
-        .btn-book {
+        .time-slot.selected {
             background: #800020;
             color: white;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
         }
-        
-        .btn-book:hover {
-            background: #a00028;
+        #timeSlots {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .user-info {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
         }
     </style>
 </head>
@@ -142,210 +58,36 @@
 </header>
 
 <section class="booking">
-    <h2>🌸 Онлайн запись</h2>
+    <h2>Онлайн запись</h2>
 
     <form id="bookingForm" class="booking-form">
-        <input type="text" id="name" placeholder="👤 Ваше имя" required>
-        <input type="tel" id="phone" placeholder="📱 Телефон" required>
+        <input type="text" id="name" placeholder="Ваше имя" required>
+        <input type="tel" id="phone" placeholder="Телефон" required>
         
         <select id="service" required>
-            <option value="" disabled selected>💇 Выберите услугу</option>
-            <option value="Маникюр">💅 Маникюр</option>
-            <option value="Женская стрижка">✂️ Женская стрижка</option>
-            <option value="Мужская стрижка">✂️ Мужская стрижка</option>
-            <option value="Окрашивание">🎨 Окрашивание</option>
-            <option value="Брови">👁️ Брови</option>
-            <option value="Пирсинг">💎 Пирсинг</option>
+            <option value="" disabled selected>Выберите услугу</option>
+            <option value="Маникюр">Маникюр</option>
+            <option value="Женская стрижка">Женская стрижка</option>
+            <option value="Мужская стрижка">Мужская стрижка</option>
+            <option value="Окрашивание">Окрашивание</option>
+            <option value="Брови">Брови</option>
+            <option value="Пирсинг">Пирсинг</option>
         </select>
 
         <input type="date" id="date" required>
         
-        <div class="time-hint">🕐 Выберите удобное время:</div>
-        <div id="timeSlots"></div>
+       
+<div id="timeSlots"></div>
+        
         <input type="hidden" id="selectedTime">
         
-        <button type="submit" class="btn-book">📅 Записаться</button>
+        <button type="submit" class="btn-book">Записаться</button>
     </form>
 </section>
 
 
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
-
-
-<script>
-    console.log('🚀 === ВЕСЬ СКРИПТ ЗАГРУЖЕН ===');
-    
-    
-    (async function() {
-        console.log('🔍 Проверяем сессию...');
-        
-        if (!window.supabase) {
-            console.error('❌ Supabase не инициализирован!');
-            return;
-        }
-        
-        const { data: { session } } = await window.supabase.auth.getSession();
-        
-        if (!session) {
-            console.log('❌ Нет сессии - редирект');
-            window.location.href = 'login.html';
-            return;
-        }
-        
-        console.log('✅ Пользователь:', session.user.email);
-        document.body.style.display = 'block';
-        
-        
-        const { data: profile } = await window.supabase
-            .from('profiles')
-            .select('name, phone')
-            .eq('id', session.user.id)
-            .maybeSingle();
-        
-        if (profile) {
-            if (profile.name) document.getElementById('name').value = profile.name;
-            if (profile.phone) document.getElementById('phone').value = profile.phone;
-        }
-        
-        
-        createTimeSlots();
-    })();
-    
-    
-    function createTimeSlots() {
-        console.log('🎯 === СОЗДАНИЕ СЛОТОВ ВРЕМЕНИ ===');
-        
-        const container = document.getElementById('timeSlots');
-        
-        if (!container) {
-            console.error('❌ Контейнер #timeSlots не найден!');
-            return;
-        }
-        
-        console.log('✅ Контейнер найден');
-        
-       
-        container.innerHTML = '';
-        
-        
-        const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-        
-        
-        times.forEach(time => {
-            const slot = document.createElement('div');
-            slot.className = 'time-slot';
-            slot.textContent = time;
-            slot.dataset.time = time;
-            container.appendChild(slot);
-        });
-        
-        console.log('✅ Создано слотов:', container.children.length);
-        
-        
-        const allSlots = document.querySelectorAll('.time-slot');
-        console.log('📊 Всего слотов в DOM:', allSlots.length);
-        
-        allSlots.forEach((slot, index) => {
-            console.log(`  Слот ${index + 1}: ${slot.textContent}`);
-            
-            
-            slot.addEventListener('click', function(e) {
-                console.log('🖱️ === КЛИК ПО СЛОТУ (addEventListener) ===');
-                handleSlotClick(this);
-            });
-            
-           
-            slot.onclick = function(e) {
-                console.log('🖱️ === КЛИК ПО СЛОТУ (onclick) ===');
-                handleSlotClick(this);
-            };
-        });
-        
-        console.log('✅ Обработчики навешены на все слоты');
-    }
-    
-    
-    function handleSlotClick(slot) {
-        const time = slot.dataset.time;
-        console.log('⏰ Выбрано время:', time);
-        
-       
-        document.querySelectorAll('.time-slot').forEach(s => {
-            s.classList.remove('selected');
-        });
-        
-       
-        slot.classList.add('selected');
-        
-        
-        const hiddenInput = document.getElementById('selectedTime');
-        if (hiddenInput) {
-            hiddenInput.value = time;
-            console.log('✅ Время сохранено:', time);
-        }
-    }
-    
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('bookingForm');
-        
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            console.log('📝 === ОТПРАВКА ФОРМЫ ===');
-            
-            const time = document.getElementById('selectedTime')?.value;
-            
-            if (!time) {
-                alert('⏰ Выберите время!');
-                return;
-            }
-            
-            console.log('🕐 Время:', time);
-            
-          
-            const { data: { session } } = await window.supabase.auth.getSession();
-            if (!session) {
-                alert('Войдите заново');
-                window.location.href = 'login.html';
-                return;
-            }
-            
-           
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const service = document.getElementById('service').value;
-            const date = document.getElementById('date').value;
-            
-            if (!service || !date) {
-                alert('Заполните все поля');
-                return;
-            }
-            
-            // Сохраняем
-            const { error } = await window.supabase
-                .from('appointments')
-                .insert([{
-                    user_id: session.user.id,
-                    name,
-                    phone,
-                    service,
-                    date,
-                    time
-                }]);
-            
-            if (error) {
-                alert('❌ Ошибка: ' + error.message);
-            } else {
-                alert('✅ Вы записаны!');
-                window.location.href = 'profile.html';
-            }
-        });
-    });
-    
-    console.log('🚀 === ВСЕ СКРИПТЫ ЗАГРУЖЕНЫ ===');
-</script>
-
+<script src="booking.js"></script>
 </body>
 </html>
