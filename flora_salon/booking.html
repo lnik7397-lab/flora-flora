@@ -41,6 +41,10 @@
             margin-bottom: 20px;
             text-align: center;
         }
+        /* ВАЖНО: Скрываем страницу ДО проверки сессии */
+        body {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -76,8 +80,7 @@
 
         <input type="date" id="date" required>
         
-       
-<div id="timeSlots"></div>
+        <div id="timeSlots"></div>
         
         <input type="hidden" id="selectedTime">
         
@@ -85,9 +88,56 @@
     </form>
 </section>
 
+<!-- ========================================== -->
+<!-- ПОДКЛЮЧЕНИЕ СКРИПТОВ -->
+<!-- ========================================== -->
 
+<!-- 1. БИБЛИОТЕКА SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2. НАСТРОЙКИ -->
 <script src="supabase.js"></script>
+
+<!-- 3. ПРОВЕРКА СЕССИИ (ВАЖНО!) -->
+<script>
+    console.log('🔍 Проверяем сессию...');
+    
+    (async function() {
+        if (!window.supabase) {
+            console.error('❌ Supabase не загружен!');
+            return;
+        }
+        
+        const { data: { session } } = await window.supabase.auth.getSession();
+        
+        if (!session) {
+            console.log('❌ Нет сессии - редирект на login.html');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        console.log('✅ Пользователь:', session.user.email);
+        
+        // ПОКАЗЫВАЕМ СТРАНИЦУ
+        document.body.style.display = 'block';
+        
+        // ЗАГРУЖАЕМ ДАННЫЕ ПРОФИЛЯ
+        const { data: profile } = await window.supabase
+            .from('profiles')
+            .select('name, phone')
+            .eq('id', session.user.id)
+            .maybeSingle();
+        
+        if (profile) {
+            if (profile.name) document.getElementById('name').value = profile.name;
+            if (profile.phone) document.getElementById('phone').value = profile.phone;
+            console.log('👤 Данные профиля загружены');
+        }
+    })();
+</script>
+
+<!-- 4. ЛОГИКА СЛОТОВ ВРЕМЕНИ -->
 <script src="booking.js"></script>
+
 </body>
 </html>
