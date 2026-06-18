@@ -64,12 +64,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ==========================================
-    // 2. ЗАГРУЗКА СЛОТОВ (только одна функция!)
+    // 2. ЗАГРУЗКА СЛОТОВ
     // ==========================================
     async function loadAvailableSlots() {
         const date = document.getElementById("date").value;
         if (!date) {
             console.log('⏳ Дата не выбрана');
+            // Показываем все слоты, если дата не выбрана
+            const container = document.getElementById("timeSlots");
+            if (container) {
+                container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">📅 Выберите дату</div>';
+            }
             return;
         }
 
@@ -90,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const bookedTimes = (appointments || []).map(a => a.time);
             console.log('📊 Занятые слоты:', bookedTimes);
             
-            // Все слоты (только по часам, чтобы было красиво)
+            // Все слоты (только по часам)
             const allSlots = [];
             for (let hour = 9; hour <= 20; hour++) {
                 allSlots.push(`${hour.toString().padStart(2, '0')}:00`);
@@ -106,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             allSlots.forEach(slot => {
                 const isBooked = bookedTimes.includes(slot);
-                const btn = document.createElement("div"); // меняем button на div
+                const btn = document.createElement("div");
                 btn.textContent = slot;
                 btn.className = "time-slot";
                 btn.dataset.time = slot;
@@ -115,22 +120,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     btn.classList.add("booked");
                     btn.style.cursor = 'not-allowed';
                 } else {
-                    // ==========================================
-                    // ОБРАБОТЧИК КЛИКА (НАДЕЖНЫЙ)
-                    // ==========================================
                     btn.onclick = function(e) {
                         e.preventDefault();
                         console.log('🖱️ КЛИК! Время:', slot);
                         
-                        // Снимаем выделение со всех слотов
                         document.querySelectorAll(".time-slot").forEach(b => {
                             b.classList.remove("selected");
                         });
                         
-                        // Выделяем текущий
                         this.classList.add("selected");
-                        
-                        // Сохраняем в скрытое поле
                         document.getElementById("selectedTime").value = slot;
                         console.log('✅ Время сохранено:', slot);
                     };
@@ -178,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             if (!time) {
-                alert(" Выберите время!");
+                alert("⏰ Выберите время!");
                 return;
             }
             
@@ -203,11 +201,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.log('✅ Успешно записано!', data);
                     alert("✅ Вы успешно записались!");
                     
-                    // Очищаем форму
                     document.getElementById("selectedTime").value = "";
                     document.querySelectorAll(".time-slot").forEach(b => b.classList.remove("selected"));
                     
-                    // Перезагружаем слоты
                     await loadAvailableSlots();
                 }
             } catch (err) {
@@ -238,38 +234,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 5. ЗАПУСКАЕМ ВСЁ
     // ==========================================
     await checkAuthAndLoadUser();
+    
     // ==========================================
-    
-// АВТОМАТИЧЕСКАЯ ЗАГРУЗКА СЛОТОВ
-// ==========================================
-
-// Устанавливаем сегодняшнюю дату по умолчанию
-if (dateInput) {
-    dateInput.value = today;
-    console.log('📅 Установлена дата по умолчанию:', today);
-}
-
-// Загружаем слоты для сегодняшней даты
-if (dateInput && dateInput.value) {
-    await loadAvailableSlots();
-}
-    
-    // Если дата уже выбрана, загружаем слоты
-    if (dateInput && dateInput.value) {
+    // 🔥 СЛОТЫ ПОЯВЛЯЮТСЯ СРАЗУ!
+    // ==========================================
+    if (dateInput) {
+        // Устанавливаем сегодняшнюю дату по умолчанию
+        dateInput.value = today;
+        console.log('📅 Установлена дата по умолчанию:', today);
+        
+        // Загружаем слоты для сегодняшней даты
         await loadAvailableSlots();
     }
     
     console.log('✅ Все скрипты загружены');
 });
-
-
-
-// ==========================================
-// УБИРАЕМ ВТОРУЮ ФУНКЦИЮ loadTimeSlots()
-// и её вызов в конце файла
-// ==========================================
-// ❌ УДАЛИТЕ ЭТО:
-// const timeSlotsContainer = document.getElementById("timeSlots");
-// const times = [...];
-// function loadTimeSlots() {...}
-// loadTimeSlots();
