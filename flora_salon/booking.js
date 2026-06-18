@@ -5,7 +5,7 @@ let currentUser = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('📄 DOM загружен');
     
-    // Проверяем Supabase
+    
     if (!window.supabase) {
         console.error('❌ Supabase не загружен!');
         alert('Ошибка загрузки. Обновите страницу.');
@@ -14,9 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log('✅ Supabase готов');
 
-    // ==========================================
-    // 1. ПРОВЕРКА АВТОРИЗАЦИИ
-    // ==========================================
+    
     async function checkAuthAndLoadUser() {
         try {
             const { data: { user }, error } = await window.supabase.auth.getUser();
@@ -30,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentUser = user;
             console.log('✅ Пользователь авторизован:', user.email);
             
-            // Загружаем профиль
+            
             try {
                 const { data: profile, error: profileError } = await window.supabase
                     .from("profiles")
@@ -63,14 +61,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // ==========================================
-    // 2. ЗАГРУЗКА СЛОТОВ
-    // ==========================================
+    
     async function loadAvailableSlots() {
         const date = document.getElementById("date").value;
         if (!date) {
             console.log('⏳ Дата не выбрана');
-            // Показываем все слоты, если дата не выбрана
+            
             const container = document.getElementById("timeSlots");
             if (container) {
                 container.innerHTML = '<div style="text-align:center;color:#999;padding:20px;">📅 Выберите дату</div>';
@@ -81,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('📅 Загружаем слоты для даты:', date);
 
         try {
-            // Получаем занятые слоты
+            
             const { data: appointments, error } = await window.supabase
                 .from("appointments")
                 .select("time")
@@ -95,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const bookedTimes = (appointments || []).map(a => a.time);
             console.log('📊 Занятые слоты:', bookedTimes);
             
-            // Все слоты (только по часам)
+            
             const allSlots = [];
             for (let hour = 9; hour <= 20; hour++) {
                 allSlots.push(`${hour.toString().padStart(2, '0')}:00`);
@@ -142,9 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // ==========================================
-    // 3. ОБРАБОТКА ФОРМЫ
-    // ==========================================
+   
     const bookingForm = document.getElementById("bookingForm");
     if (bookingForm) {
         bookingForm.addEventListener("submit", async (e) => {
@@ -214,36 +208,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('✅ Обработчик формы установлен');
     }
 
-    // ==========================================
-    // 4. ОБРАБОТЧИК СМЕНЫ ДАТЫ
-    // ==========================================
+   
     const dateInput = document.getElementById("date");
     if (dateInput) {
         dateInput.addEventListener("change", loadAvailableSlots);
         console.log('✅ Обработчик даты установлен');
     }
 
-    // Устанавливаем минимальную дату
+    
     const today = new Date().toISOString().split("T")[0];
     if (dateInput) {
         dateInput.min = today;
         console.log('📅 Минимальная дата:', today);
     }
 
-    // ==========================================
-    // 5. ЗАПУСКАЕМ ВСЁ
-    // ==========================================
-    await checkAuthAndLoadUser();
     
-    // ==========================================
-    // 🔥 СЛОТЫ ПОЯВЛЯЮТСЯ СРАЗУ!
-    // ==========================================
+    await checkAuthAndLoadUser();
+  
     if (dateInput) {
-        // Устанавливаем сегодняшнюю дату по умолчанию
+       
         dateInput.value = today;
         console.log('📅 Установлена дата по умолчанию:', today);
         
-        // Загружаем слоты для сегодняшней даты
+        
         await loadAvailableSlots();
     }
     
