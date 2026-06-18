@@ -41,6 +41,10 @@
             margin-bottom: 20px;
             text-align: center;
         }
+       
+        body {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -76,8 +80,7 @@
 
         <input type="date" id="date" required>
         
-       
-<div id="timeSlots"></div>
+        <div id="timeSlots"></div>
         
         <input type="hidden" id="selectedTime">
         
@@ -85,8 +88,59 @@
     </form>
 </section>
 
+
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
 <script src="supabase.js"></script>
+
+
+<script>
+   
+    
+    console.log('1. Загружаем Supabase...');
+    
+    
+    const supabaseUrl = 'ваш_url';
+    const supabaseKey = 'ваш_ключ';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    
+    console.log('2. Supabase инициализирован');
+    
+   
+    async function checkAuth() {
+        console.log('3. Проверяем сессию...');
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        console.log('4. Сессия получена:', session ? 'ЕСТЬ' : 'НЕТ');
+        
+        if (!session) {
+            console.log('5. Нет сессии - редирект на login.html');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        console.log('6. Сессия есть! Показываем страницу');
+        document.body.style.display = 'block';
+        
+       
+        window.currentUserId = session.user.id;
+        console.log('7. ID пользователя:', window.currentUserId);
+    }
+    
+
+    checkAuth();
+    
+   
+    
+    console.log('8. Скрипт загружен');
+</script>
+
+
 <script src="booking.js"></script>
+
 </body>
 </html>
