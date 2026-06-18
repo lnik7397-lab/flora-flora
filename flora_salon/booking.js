@@ -238,16 +238,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 5. ЗАПУСКАЕМ ВСЁ
     // ==========================================
     await checkAuthAndLoadUser();
+    // ==========================================
     
-    // Если дата уже выбрана, загружаем слоты
-    if (dateInput && dateInput.value) {
-        await loadAvailableSlots();
-    }
-    
-    console.log('✅ Все скрипты загружены');
-});
-
-// ==========================================
 // АВТОМАТИЧЕСКАЯ ЗАГРУЗКА СЛОТОВ
 // ==========================================
 
@@ -261,6 +253,16 @@ if (dateInput) {
 if (dateInput && dateInput.value) {
     await loadAvailableSlots();
 }
+    
+    // Если дата уже выбрана, загружаем слоты
+    if (dateInput && dateInput.value) {
+        await loadAvailableSlots();
+    }
+    
+    console.log('✅ Все скрипты загружены');
+});
+
+
 
 // ==========================================
 // УБИРАЕМ ВТОРУЮ ФУНКЦИЮ loadTimeSlots()
