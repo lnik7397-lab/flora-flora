@@ -13,6 +13,8 @@
             cursor: pointer;
             background: white;
             transition: 0.3s;
+            text-align: center;
+            user-select: none;
         }
         .time-slot:hover:not(.booked) {
             background: #800020;
@@ -41,7 +43,7 @@
             margin-bottom: 20px;
             text-align: center;
         }
-        /* ВАЖНО: Скрываем страницу ДО проверки сессии */
+        /* Скрываем страницу до проверки сессии */
         body {
             display: none;
         }
@@ -98,7 +100,7 @@
 <!-- 2. НАСТРОЙКИ -->
 <script src="supabase.js"></script>
 
-<!-- 3. ПРОВЕРКА СЕССИИ (ВАЖНО!) -->
+<!-- 3. ПРОВЕРКА СЕССИИ (ТОЛЬКО ПРОВЕРКА, БЕЗ СОЗДАНИЯ СЛОТОВ!) -->
 <script>
     console.log('🔍 Проверяем сессию...');
     
@@ -136,7 +138,7 @@
     })();
 </script>
 
-<!-- 4. ЛОГИКА СЛОТОВ ВРЕМЕНИ -->
+<!-- 4. ЛОГИКА СЛОТОВ ВРЕМЕНИ И ФОРМЫ (из booking.js) -->
 <script src="booking.js"></script>
 
 </body>
