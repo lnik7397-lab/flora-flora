@@ -16,31 +16,26 @@
             text-align: center;
             user-select: none;
         }
-        
         .time-slot:hover:not(.booked) {
             background: #800020;
             color: white;
         }
-        
         .time-slot.booked {
             background: #f0f0f0;
             color: #999;
             cursor: not-allowed;
             text-decoration: line-through;
         }
-        
         .time-slot.selected {
             background: #800020;
             color: white;
         }
-        
         #timeSlots {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin: 20px 0;
         }
-        
         body {
             display: none;
         }
@@ -87,191 +82,108 @@
     </form>
 </section>
 
-<!-- ========================================== -->
-<!-- ПОДКЛЮЧЕНИЕ СКРИПТОВ -->
-<!-- ========================================== -->
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 
 <script>
-    console.log('🚀 === СТРАНИЦА ЗАПИСИ ===');
+console.log('Страница загружена');
+
+// Проверка сессии
+(async function() {
+    if (!window.supabase) {
+        console.error('Supabase не загружен');
+        return;
+    }
     
-    // ==========================================
-    // 1. ПРОВЕРКА СЕССИИ
-    // ==========================================
-    (async function() {
-        if (!window.supabase) {
-            console.error('❌ Supabase не загружен');
+    const { data: { session } } = await window.supabase.auth.getSession();
+    
+    if (!session) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    document.body.style.display = 'block';
+    
+    // Загружаем профиль
+    const { data: profile } = await window.supabase
+        .from('profiles')
+        .select('name, phone')
+        .eq('id', session.user.id)
+        .maybeSingle();
+    
+    if (profile) {
+        if (profile.name) document.getElementById('name').value = profile.name;
+        if (profile.phone) document.getElementById('phone').value = profile.phone;
+    }
+    
+    // Создаем слоты
+    const container = document.getElementById('timeSlots');
+    const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+    
+    times.forEach(time => {
+        const slot = document.createElement('div');
+        slot.className = 'time-slot';
+        slot.textContent = time;
+        slot.dataset.time = time;
+        
+        slot.addEventListener('click', function() {
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('selectedTime').value = time;
+        });
+        
+        container.appendChild(slot);
+    });
+})();
+
+// Отправка формы
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const time = document.getElementById('selectedTime').value;
+        if (!time) {
+            alert('Выберите время!');
             return;
         }
         
         const { data: { session } } = await window.supabase.auth.getSession();
-        
         if (!session) {
-            console.log('❌ Нет сессии - редирект');
+            alert('Войдите заново');
             window.location.href = 'login.html';
             return;
         }
         
-        console.log('✅ Пользователь:', session.user.email);
-        document.body.style.display = 'block';
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const service = document.getElementById('service').value;
+        const date = document.getElementById('date').value;
         
-        // Подставляем данные профиля в поля формы
-        const { data: profile } = await window.supabase
-            .from('profiles')
-            .select('name, phone')
-            .eq('id', session.user.id)
-            .maybeSingle();
-        
-        if (profile) {
-            if (profile.name) document.getElementById('name').value = profile.name;
-            if (profile.phone) document.getElementById('phone').value = profile.phone;
-            console.log('👤 Данные профиля загружены');
-        }
-        
-        // СОЗДАЕМ СЛОТЫ ВРЕМЕНИ
-        createTimeSlots();
-    })();
-    
-    // ==========================================
-    // 2. СОЗДАНИЕ СЛОТОВ ВРЕМЕНИ
-    // ==========================================
-    function createTimeSlots() {
-        console.log('🎯 Создаем слоты времени...');
-        
-        const container = document.getElementById('timeSlots');
-        
-        if (!container) {
-            console.error('❌ #timeSlots не найден');
+        if (!name || !phone || !service || !date) {
+            alert('Заполните все поля');
             return;
         }
         
-        container.innerHTML = '';
+        const { error } = await window.supabase
+            .from('appointments')
+            .insert([{
+                user_id: session.user.id,
+                name: name,
+                phone: phone,
+                service: service,
+                date: date,
+                time: time,
+                status: 'active'
+            }]);
         
-        const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-        
-        times.forEach(time => {
-            const slot = document.createElement('div');
-            slot.className = 'time-slot';
-            slot.textContent = time;
-            slot.dataset.time = time;
-            container.appendChild(slot);
-        });
-        
-        console.log('✅ Создано слотов:', container.children.length);
-        
-        // НАВЕШИВАЕМ ОБРАБОТЧИКИ
-        document.querySelectorAll('.time-slot').forEach(slot => {
-            slot.addEventListener('click', function(e) {
-                handleSlotClick(this);
-            });
-        });
-        
-        console.log('✅ Обработчики навешены');
-    }
-    
-    // ==========================================
-    // 3. ОБРАБОТКА КЛИКА ПО СЛОТУ
-    // ==========================================
-    function handleSlotClick(slot) {
-        const time = slot.dataset.time;
-        console.log('🖱️ Выбрано время:', time);
-        
-        // Снимаем выделение со всех
-        document.querySelectorAll('.time-slot').forEach(s => {
-            s.classList.remove('selected');
-        });
-        
-        // Выделяем текущий
-        slot.classList.add('selected');
-        
-        // Сохраняем в скрытое поле
-        const hiddenInput = document.getElementById('selectedTime');
-        if (hiddenInput) {
-            hiddenInput.value = time;
-            console.log('✅ Время сохранено:', time);
+        if (error) {
+            alert('Ошибка: ' + error.message);
+        } else {
+            alert('Вы записаны!');
+            window.location.href = 'profile.html';
         }
-    }
-    
-    // ==========================================
-    // 4. ОТПРАВКА ФОРМЫ (СО ВСЕМИ ПОЛЯМИ)
-    // ==========================================
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('bookingForm');
-        
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            console.log('📝 === ОТПРАВКА ФОРМЫ ===');
-            
-            // Проверяем время
-            const time = document.getElementById('selectedTime')?.value;
-            if (!time) {
-                alert('⏰ Пожалуйста, выберите время!');
-                return;
-            }
-            
-            // Проверяем сессию
-            const { data: { session } } = await window.supabase.auth.getSession();
-            if (!session) {
-                alert('⛔ Сессия истекла. Войдите заново.');
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            // Собираем ВСЕ данные
-            const name = document.getElementById('name').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const service = document.getElementById('service').value;
-            const date = document.getElementById('date').value;
-            
-            // Проверяем обязательные поля
-            if (!name) {
-                alert('👤 Введите ваше имя');
-                return;
-            }
-            if (!phone) {
-                alert('📱 Введите телефон');
-                return;
-            }
-            if (!service) {
-                alert('💇 Выберите услугу');
-                return;
-            }
-            if (!date) {
-                alert('📅 Выберите дату');
-                return;
-            }
-            
-            console.log('📦 Данные для записи:', { name, phone, service, date, time });
-            
-            // ==========================================
-            // СОХРАНЯЕМ В БАЗУ (ВСЕ ПОЛЯ)
-            // ==========================================
-            const { data, error } = await window.supabase
-                .from('appointments')
-                .insert([{
-                    user_id: session.user.id,
-                    name: name,
-                    phone: phone,
-                    service: service,
-                    date: date,
-                    time: time,
-                    status: 'active'
-                }]);
-            
-            if (error) {
-                console.error('❌ Ошибка записи:', error);
-                alert('❌ Не удалось записаться: ' + error.message);
-            } else {
-                console.log('✅ Запись создана!', data);
-                alert('✅ Вы успешно записаны!');
-                window.location.href = 'profile.html';
-            }
-        });
     });
-    
-    console.log('🚀 === ВСЕ СКРИПТЫ ЗАГРУЖЕНЫ ===');
+});
 </script>
 
 </body>
