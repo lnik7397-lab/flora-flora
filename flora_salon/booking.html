@@ -69,39 +69,41 @@
             <option value="Брови">Брови</option>
             <option value="Пирсинг">Пирсинг</option>
         </select>
+        
+<input type="date" id="date" required>
 
-        <input type="date" id="date" required>
-        
-        <div id="timeSlots"></div>
-        
-        <input type="hidden" id="selectedTime">
-        
-        <button type="submit" class="btn-book">Записаться</button>
+
+<div id="timeSlots"></div>
+
+
+<input type="hidden" id="selectedTime">
+
+<button type="submit" class="btn-book">Записаться</button>
+
+      
     </form>
 </section>
 
-<!-- ========================================== -->
-<!-- ПОДКЛЮЧАЕМ СКРИПТЫ (ОДИНАКОВО НА ВСЕХ СТРАНИЦАХ) -->
-<!-- ========================================== -->
 
-<!-- 1. БИБЛИОТЕКА -->
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- 2. НАСТРОЙКИ (ОДИН РАЗ НА ВСЕХ СТРАНИЦАХ) -->
+
 <script src="supabase.js"></script>
 
-<!-- 3. ПРОВЕРКА СЕССИИ И ПОКАЗ СТРАНИЦЫ -->
+
 <script>
     console.log('🚀 === СТРАНИЦА ЗАПИСИ ===');
     
-    // Проверяем, что supabase инициализирован
+  
     if (!window.supabase) {
         console.error('❌ Supabase не инициализирован!');
         document.body.innerHTML = '<h1 style="color:red;">Ошибка: Supabase не загружен</h1>';
     } else {
         console.log('✅ Supabase доступен');
         
-        // Проверяем сессию
+        
         window.supabase.auth.getSession()
             .then(({ data: { session }, error }) => {
                 if (error) {
@@ -119,10 +121,10 @@
                     console.log('✅ Пользователь:', session.user.email);
                     console.log('🆔 ID:', session.user.id);
                     
-                    // ПОКАЗЫВАЕМ СТРАНИЦУ
+                    
                     document.body.style.display = 'block';
                     
-                    // Подставляем имя и телефон из профиля
+                    
                     window.supabase
                         .from('profiles')
                         .select('name, phone')
@@ -144,7 +146,7 @@
     }
 </script>
 
-<!-- 4. ЛОГИКА РАБОТЫ СО СЛОТАМИ ВРЕМЕНИ И ФОРМОЙ -->
+
 <script src="booking.js"></script>
 
 </body>
