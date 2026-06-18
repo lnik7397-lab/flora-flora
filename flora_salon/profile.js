@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Страница профиля загружена');
     
-    
+   
     if (!window.supabase) {
-        console.error('Supabase не загружен!');
+        console.error('❌ Supabase не загружен!');
         alert('Ошибка загрузки. Обновите страницу.');
         return;
     }
@@ -11,13 +12,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session }, error: sessionError } = await window.supabase.auth.getSession();
     
     if (sessionError || !session) {
-        console.error('Нет сессии');
+        console.error('❌ Нет сессии');
         window.location.href = "login.html";
         return;
     }
 
-    const user = session.user; 
-    console.log('✅ Загружаем профиль для:', user.email);
+    const user = session.user;
+    console.log('✅ Пользователь:', user.email);
 
     
     const { data: profile, error: profileError } = await window.supabase
@@ -30,20 +31,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Ошибка загрузки профиля:', profileError);
     }
 
-    
-    if (document.getElementById("userName")) {
-        document.getElementById("userName").textContent = profile?.name || user.user_metadata?.name || "—";
-    }
-    
-    if (document.getElementById("userEmail")) {
-        document.getElementById("userEmail").textContent = user.email || "—";
-    }
-    
-    if (document.getElementById("userPhone")) {
-        document.getElementById("userPhone").textContent = profile?.phone || user.user_metadata?.phone || "—";
-    }
+    // Отображаем данные
+    document.getElementById("userName").textContent = profile?.name || user.user_metadata?.name || "—";
+    document.getElementById("userEmail").textContent = user.email || "—";
+    document.getElementById("userPhone").textContent = profile?.phone || user.user_metadata?.phone || "—";
 
-   
+    
     const { data: appointment } = await window.supabase
         .from("appointments")
         .select("*")
@@ -53,19 +46,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         .maybeSingle();
 
     if (appointment) {
-        if (document.getElementById("service")) 
-            document.getElementById("service").textContent = appointment.service;
-        if (document.getElementById("date")) 
-            document.getElementById("date").textContent = appointment.date;
-        if (document.getElementById("time")) 
-            document.getElementById("time").textContent = appointment.time;
+        document.getElementById("service").textContent = appointment.service || "—";
+        document.getElementById("date").textContent = appointment.date || "—";
+        document.getElementById("time").textContent = appointment.time || "—";
     } else {
-        if (document.getElementById("service")) 
-            document.getElementById("service").textContent = "Нет записей";
-        if (document.getElementById("date")) 
-            document.getElementById("date").textContent = "—";
-        if (document.getElementById("time")) 
-            document.getElementById("time").textContent = "—";
+        document.getElementById("service").textContent = "Нет записей";
+        document.getElementById("date").textContent = "—";
+        document.getElementById("time").textContent = "—";
     }
 
     
@@ -77,24 +64,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    
+   
     const bookingAgainBtn = document.getElementById("bookingAgainBtn");
+    
+    
+    console.log('🔍 Кнопка "bookingAgainBtn" найдена?', bookingAgainBtn ? 'ДА' : 'НЕТ');
+    
     if (bookingAgainBtn) {
-        bookingAgainBtn.addEventListener("click", () => {
-           
-            window.supabase.auth.getSession().then(({ data: { session } }) => {
-                if (session) {
+       
+        bookingAgainBtn.onclick = function(e) {
+            e.preventDefault();
+            console.log('🔄 Нажата кнопка "Записаться снова"');
+            
+            
+            window.supabase.auth.getSession()
+                .then(({ data: { session } }) => {
+                    console.log('📡 Сессия при клике:', session ? 'ЕСТЬ' : 'НЕТ');
                     
-                    console.log('✅ Переход на запись с сессией');
-                    window.location.href = "booking.html";
-                } else {
-                   
-                    console.log('❌ Нет сессии, идем на логин');
+                    if (session) {
+                        console.log('✅ Переходим на booking.html');
+                        window.location.href = "booking.html";
+                    } else {
+                        console.log('❌ Сессии нет, идем на логин');
+                        window.location.href = "login.html";
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Ошибка при проверке сессии:', error);
                     window.location.href = "login.html";
-                }
-            }).catch(() => {
-                window.location.href = "login.html";
-            });
-        });
+                });
+        };
+        
+        console.log('✅ Обработчик для кнопки установлен');
+    } else {
+        console.error('❌ КНОПКА НЕ НАЙДЕНА! Проверьте id="bookingAgainBtn" в HTML');
     }
 });
