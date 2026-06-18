@@ -1,268 +1,217 @@
 
-let currentUser = null;
+console.log('📝 Загружен booking.js');
 
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    if (!window.supabase) {
-        console.error('Supabase не загружен!');
-        alert('Ошибка загрузки. Обновите страницу.');
-        return;
-    }
 
-    console.log('Supabase готов');
+let currentSession = null;
 
-   
-    async function checkAuthAndLoadUser() {
-        try {
-            const { data: { user }, error } = await window.supabase.auth.getUser();
-            
-            if (error || !user) {
-                window.location.href = "login.html";
-                return null;
-            }
-            
-            currentUser = user;
-            console.log('Пользователь авторизован:', user.email);
-            
-           
-            try {
-                const { data: profile, error: profileError } = await window.supabase
-                    .from("profiles")
-                    .select("name, phone")
-                    .eq("id", user.id)
-                    .maybeSingle();  
-                
-                if (profileError) {
-                    console.error('Ошибка загрузки профиля:', profileError);
-                }
-                
-                
-                if (document.getElementById("name")) {
-                    const userName = profile?.name || user.user_metadata?.name || "";
-                    document.getElementById("name").value = userName;
-                    console.log('Заполнено имя:', userName);
-                }
-                
-                if (document.getElementById("phone")) {
-                    const userPhone = profile?.phone || user.user_metadata?.phone || "";
-                    document.getElementById("phone").value = userPhone;
-                    console.log('Заполнен телефон:', userPhone);
-                }
-            } catch (err) {
-                console.error('Ошибка загрузки профиля:', err);
-                
-                if (document.getElementById("name")) {
-                    document.getElementById("name").value = user.user_metadata?.name || "";
-                }
-                if (document.getElementById("phone")) {
-                    document.getElementById("phone").value = user.user_metadata?.phone || "";
-                }
-            }
-            
-            return user;
-        } catch (err) {
-            console.error('Ошибка:', err);
-            window.location.href = "login.html";
+
+async function getSessionForce() {
+    try {
+        
+        const { data: { session }, error } = await window.supabase.auth.getSession();
+        
+        if (error) {
+            console.error('❌ Ошибка getSession():', error);
             return null;
         }
-    }
-
-    async function loadAvailableSlots() {
-        const date = document.getElementById("date").value;
-        if (!date) return;
-
-        try {
-            const { data: appointments, error } = await window.supabase
-                .from("appointments")
-                .select("time")
-                .eq("date", date);
-
-            if (error) {
-                console.error('Ошибка загрузки слотов:', error);
-                return;
-            }
-
-            const bookedTimes = (appointments || []).map(a => a.time);
-            
-            const allSlots = [];
-            for (let hour = 9; hour <= 20; hour++) {
-                allSlots.push(`${hour.toString().padStart(2, '0')}:00`);
-                if (hour !== 20) allSlots.push(`${hour.toString().padStart(2, '0')}:30`);
-            }
-
-            const container = document.getElementById("timeSlots");
-            if (!container) return;
-            
-            container.innerHTML = "";
-            
-            allSlots.forEach(slot => {
-                const isBooked = bookedTimes.includes(slot);
-                const btn = document.createElement("button");
-                btn.textContent = slot;
-                btn.className = "time-slot";
-                if (isBooked) {
-                    btn.classList.add("booked");
-                    btn.disabled = true;
-                } else {
-                    btn.onclick = () => {
-                        document.querySelectorAll(".time-slot").forEach(b => b.classList.remove("selected"));
-                        btn.classList.add("selected");
-                        document.getElementById("selectedTime").value = slot;
-                    };
-                }
-                container.appendChild(btn);
-            });
-        } catch (err) {
-            console.error('Ошибка:', err);
+        
+        if (session) {
+            console.log('✅ Сессия получена через getSession()');
+            return session;
         }
+        
+        
+        console.log('⚠️ getSession() вернул null, пробуем getUser()...');
+        const { data: { user }, error: userError } = await window.supabase.auth.getUser();
+        
+        if (userError) {
+            console.error('❌ Ошибка getUser():', userError);
+            return null;
+        }
+        
+        if (user) {
+            console.log('✅ Пользователь найден через getUser()');
+           
+            return { user: user };
+        }
+        
+        console.log('❌ Пользователь не найден');
+        return null;
+        
+    } catch (err) {
+        console.error('❌ Критическая ошибка в getSessionForce():', err);
+        return null;
     }
+}
 
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM загружен');
+    
+    
+    if (!window.supabase) {
+        console.error('❌ Supabase НЕ ДОСТУПЕН!');
+        alert('Ошибка: Supabase не загружен. Обновите страницу.');
+        return;
+    }
+    
+    console.log('✅ Supabase доступен');
+    
    
-    const bookingForm = document.getElementById("bookingForm");
-    if (bookingForm) {
-        bookingForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
+    const timeSlotsContainer = document.getElementById('timeSlots');
+    if (timeSlotsContainer) {
+        const times = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+        
+        timeSlotsContainer.innerHTML = '';
+        times.forEach(time => {
+            const slot = document.createElement('div');
+            slot.className = 'time-slot';
+            slot.textContent = time;
+            slot.dataset.time = time;
             
-            if (!currentUser) {
-                window.location.href = "login.html";
+            slot.addEventListener('click', function() {
+                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('selectedTime').value = time;
+                console.log('🕐 Выбрано время:', time);
+            });
+            
+            timeSlotsContainer.appendChild(slot);
+        });
+        console.log('✅ Слоты времени созданы');
+    } else {
+        console.warn('⚠️ Контейнер #timeSlots не найден');
+    }
+    
+   
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+       
+        const newForm = bookingForm.cloneNode(true);
+        bookingForm.parentNode.replaceChild(newForm, bookingForm);
+        
+       
+        newForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('📝 === ОТПРАВКА ФОРМЫ ===');
+            
+          
+            console.log('🔍 Проверяем сессию перед отправкой...');
+            
+            
+            let session = null;
+            let attempts = 0;
+            
+            while (!session && attempts < 3) {
+                attempts++;
+                console.log(`🔄 Попытка ${attempts} получить сессию...`);
+                
+                try {
+                    
+                    const { data: { session: s }, error } = await window.supabase.auth.getSession();
+                    
+                    if (error) {
+                        console.warn(`⚠️ Попытка ${attempts}: ошибка getSession()`, error);
+                    } else if (s) {
+                        session = s;
+                        console.log(`✅ Попытка ${attempts}: сессия получена!`);
+                        break;
+                    }
+                    
+                 
+                    if (!s) {
+                        console.log(`🔄 Попытка ${attempts}: пробуем refreshSession()`);
+                        const { data: { session: refreshed }, error: refreshError } = await window.supabase.auth.refreshSession();
+                        
+                        if (refreshError) {
+                            console.warn(`⚠️ Попытка ${attempts}: ошибка refreshSession()`, refreshError);
+                        } else if (refreshed) {
+                            session = refreshed;
+                            console.log(`✅ Попытка ${attempts}: сессия обновлена!`);
+                            break;
+                        }
+                    }
+                    
+                    
+                    if (!session && attempts < 3) {
+                        console.log(`⏳ Ждем 500мс перед попыткой ${attempts + 1}...`);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                } catch (err) {
+                    console.error(`❌ Попытка ${attempts}: ошибка`, err);
+                }
+            }
+            
+            
+            if (!session) {
+                console.error('❌ Сессия не найдена после всех попыток!');
+                alert('⛔ Сессия истекла. Пожалуйста, войдите заново.');
+                window.location.href = 'login.html';
                 return;
             }
             
-            const name = document.getElementById("name").value;
-            const phone = document.getElementById("phone").value;
-            const service = document.getElementById("service").value;
-            const date = document.getElementById("date").value;
-            const time = document.getElementById("selectedTime").value;
+            console.log('✅ Сессия есть! Пользователь:', session.user.email);
+            console.log('🆔 ID пользователя:', session.user.id);
+            
+            
+            const name = document.getElementById('name')?.value || '';
+            const phone = document.getElementById('phone')?.value || '';
+            const service = document.getElementById('service')?.value || '';
+            const date = document.getElementById('date')?.value || '';
+            const time = document.getElementById('selectedTime')?.value || '';
+            
+            console.log('📦 Данные формы:', { name, phone, service, date, time });
+            
             
             if (!service) {
-                alert("Выберите услугу!");
+                alert('Пожалуйста, выберите услугу');
                 return;
             }
-            
             if (!date) {
-                alert("Выберите дату!");
+                alert('Пожалуйста, выберите дату');
                 return;
             }
-            
             if (!time) {
-                alert("Выберите время!");
+                alert('Пожалуйста, выберите время');
                 return;
             }
             
-            console.log('Отправка записи:', { user_id: currentUser.id, service, date, time });
+            
+            console.log('💾 Сохраняем запись в базу...');
             
             try {
-                const { data, error } = await window.supabase
-                    .from("appointments")
-                    .insert({
-                        user_id: currentUser.id,
+                const { data, error: insertError } = await window.supabase
+                    .from('appointments')
+                    .insert([{
+                        user_id: session.user.id,
+                        name: name || session.user.user_metadata?.name || 'Клиент',
+                        phone: phone || session.user.user_metadata?.phone || '',
                         service: service,
                         date: date,
                         time: time,
-                        status: "Активна"
-                    })
-                    .select();  
+                        status: 'active',
+                        created_at: new Date().toISOString()
+                    }]);
                 
-                if (error) {
-                    console.error('Ошибка Supabase:', error);
-                    alert("Ошибка: " + error.message);
-                } else {
-                    console.log('Успешно записано:', data);
-                    alert("✅ Вы успешно записались!");
-                    bookingForm.reset();
-                    document.getElementById("selectedTime").value = "";
-                    
-                    
-                    if (currentUser) {
-                        try {
-                            const { data: profile } = await window.supabase
-                                .from("profiles")
-                                .select("name, phone")
-                                .eq("id", currentUser.id)
-                                .maybeSingle();
-                            if (document.getElementById("name")) {
-                                document.getElementById("name").value = profile?.name || currentUser.user_metadata?.name || "";
-                            }
-                            if (document.getElementById("phone")) {
-                                document.getElementById("phone").value = profile?.phone || currentUser.user_metadata?.phone || "";
-                            }
-                        } catch (err) {
-                            console.error('Ошибка загрузки профиля:', err);
-                        }
-                    }
-                    loadAvailableSlots();
+                if (insertError) {
+                    console.error('❌ Ошибка записи:', insertError);
+                    alert('❌ Не удалось записаться: ' + insertError.message);
+                    return;
                 }
+                
+                console.log('✅ Запись успешно создана!', data);
+                alert('✅ Вы успешно записаны!');
+                window.location.href = 'profile.html';
+                
             } catch (err) {
-                console.error('Ошибка:', err);
-                alert("Ошибка: " + err.message);
+                console.error('❌ Критическая ошибка при сохранении:', err);
+                alert('❌ Произошла ошибка. Попробуйте еще раз.');
             }
         });
+        
+        console.log('✅ Обработчик формы установлен');
+    } else {
+        console.error('❌ Форма #bookingForm не найдена!');
     }
-
-    
-    const dateInput = document.getElementById("date");
-    if (dateInput) {
-        dateInput.addEventListener("change", loadAvailableSlots);
-    }
-
-    const today = new Date().toISOString().split("T")[0];
-    if (dateInput) {
-        dateInput.min = today;
-    }
-
-   
-    await checkAuthAndLoadUser();
 });
-
-const timeSlotsContainer =
-document.getElementById("timeSlots");
-
-const times = [
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00"
-];
-
-function loadTimeSlots() {
-
-    timeSlotsContainer.innerHTML = "";
-
-    times.forEach(time => {
-
-        const slot =
-        document.createElement("div");
-
-        slot.classList.add("time-slot");
-
-        slot.textContent = time;
-
-        slot.addEventListener("click", () => {
-
-            document
-            .querySelectorAll(".time-slot")
-            .forEach(item => {
-                item.classList.remove("selected");
-            });
-
-            slot.classList.add("selected");
-
-            document
-            .getElementById("selectedTime")
-            .value = time;
-
-        });
-
-        timeSlotsContainer.appendChild(slot);
-
-    });
-
-}
-
-loadTimeSlots();
